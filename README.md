@@ -7,7 +7,7 @@ In chat, type
 
 **_kick player_name**
   
-You can also use the console command, which is
+If you prefer to use the in-game console, use the command
 
 **kick_player player_name**
 
