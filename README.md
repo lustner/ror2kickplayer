@@ -4,10 +4,10 @@ Kick toxic players. Do not abuse.
 
 ## How to use
 In chat, type
-_kick player_name
+**_kick player_name**
 
 You can also use the console command, which is
-kick_player player_name
+**kick_player player_name**
 
 ## Changelog
 
