@@ -1,6 +1,6 @@
 ﻿{
 	"name": "KickPlayer",
-	"version_number": "1.0.0",
+	"version_number": "1.1.0",
 	"website_url": "https://github.com/lustner/ror2kickplayer",
 	"description": "Kick toxic players. Do not abuse.",
 	"dependencies": [
