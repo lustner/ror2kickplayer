@@ -19,9 +19,11 @@ namespace KickPlayer
     {
         public const string PluginAuthor = "lustner";
         public const string PluginName = "Kick Player";
-        public const string PluginVersion = "1.0.0";
+        public const string PluginVersion = "1.1.0";
         public const string PluginGUID = "lustner.KickPlayer";
-        private const string KickPlayerHelpText = "Usage: _kick {player_name}\nDescription: Kick player according to given name";
+        private const string KickPlayerHelpText = "Usage: _kick {player_name or index}\nDescription: Kick player according to given name or lobby index";
+        private const string KickPlayerConsoleHelpText = "Usage: kick_player {player_name or index}\nDescription: Kick player according to given name or lobby index";
+        private const string ListPlayersConsoleHelpText = "Usage: list_players\nDescription: List players in current lobby";
         public static KickPlayerPlugin Instance { get; set; }
         internal static new ManualLogSource Logger { get; set; }
 
@@ -47,14 +49,20 @@ namespace KickPlayer
 
             if (args.Length != 1)
             {
-                return KickPlayerHelpText;
+                return "Missing player name or index";
             }
 
-            var playerName = args[0];
-            NetworkUser player = GetNetUserFromString(playerName);
+            var playerString = args[0];
+            NetworkUser player = GetNetUserFromString(playerString);            
+
             if (player == null)
             {
-                return "Unable to find player with given name";
+                return "Unable to find player with given name or index";
+            }
+
+            if (player.userName == sender.userName)
+            {
+                return "Unable to kick host";
             }
 
             try
@@ -62,12 +70,43 @@ namespace KickPlayer
                 string steamId = player.id.steamId.steamValue.ToString();                                
                 Logger.LogInfo($"Trying to kick player with username {player.userName} and steam_id {steamId}");
                 sender.CallCmdSendConsoleCommand("kick_steam", new string[] { steamId });                
-                return "Player " + playerName + " kicked";
+                return "Player " + player.userName + " kicked";
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex);
                 return "Unable to kick player";
+            }
+        }
+
+        private static string ListPlayers(NetworkUser sender, string[] args)
+        {
+            if (!sender.hasAuthority)
+            {
+                return "";
+            }
+
+            if (args.Length != 0)
+            {
+                return "Command takes 0 arguments";
+            }
+
+            try
+            {                
+                var playerLines = new List<string>();
+                for (int i = 0; i < NetworkUser.readOnlyInstancesList.Count; i++)
+                {
+                    var player = NetworkUser.readOnlyInstancesList[i];
+                    var playerLine = $"Player {i}: {player.userName}";
+                    Logger.LogInfo(playerLine);
+                    playerLines.Add(playerLine);
+                }
+                return string.Join("\n", playerLines);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex);
+                return "Unable to list players";
             }
         }
 
@@ -113,10 +152,20 @@ namespace KickPlayer
         }
 
         #region Console Commands
-        [ConCommand(commandName = "kick_player", flags = ConVarFlags.ExecuteOnServer, helpText = KickPlayerHelpText)]
+        [ConCommand(commandName = "kick_player", flags = ConVarFlags.ExecuteOnServer, helpText = KickPlayerConsoleHelpText)]
         private static void CommandKickPlayer(ConCommandArgs args)
         {
-            Logger.LogDebug(KickPlayer(args.sender, args.userArgs.ToArray()));
+            string result = KickPlayer(args.sender, args.userArgs.ToArray());
+            print(result);
+            Logger.LogDebug(result);
+        }
+
+        [ConCommand(commandName = "list_players", flags = ConVarFlags.ExecuteOnServer, helpText = ListPlayersConsoleHelpText)]
+        private static void CommandListPlayers(ConCommandArgs args)
+        {
+            string result = ListPlayers(args.sender, args.userArgs.ToArray());
+            print(result);
+            Logger.LogDebug(result);
         }
         #endregion
 
