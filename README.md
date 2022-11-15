@@ -13,6 +13,10 @@ If you prefer to use the in-game console, use the command
 
 ## Changelog
 
+**1.1.0**
+
+* Adds list_players console command and more detailed help messages.
+
 **1.0.0**
 
 * First release.
